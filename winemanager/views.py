@@ -6,12 +6,16 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Count, Q
 
 class WineViewSet(viewsets.ModelViewSet):
-    queryset = Wine.objects.all() 
+    
     serializer_class = WineSerializer
-
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["name", "country", "region", "grape_varieties", "wine_type"]
+    ordering_fields = ["name", "vintage", "country", "bottle_count", "in_stock_count"]
+    ordering = ["name"]
     def get_queryset(self):
         return (
                     Wine.objects.all()
@@ -19,7 +23,6 @@ class WineViewSet(viewsets.ModelViewSet):
                         bottle_count=Count("bottle", distinct=True),
                         in_stock_count=Count("bottle", filter=Q(bottle__consumed_at__isnull=True), distinct=True),
                 )
-                .order_by("name")
             )
 class BottleViewSet(viewsets.ModelViewSet):
     queryset = Bottle.objects.all().order_by('-id')

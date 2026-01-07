@@ -4,7 +4,7 @@ from .views import WineViewSet,BottleViewSet, StoreViewSet
 
 
 router = DefaultRouter()
-router.register(r'wines', WineViewSet)
+router.register(r'wines', WineViewSet, basename='wine')
 router.register(r'bottles', BottleViewSet)
 router.register(r'stores', StoreViewSet)
 
