@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Wine(models.Model):
     name = models.CharField(max_length=200)
@@ -7,6 +8,10 @@ class Wine(models.Model):
     country = models.CharField(max_length=100, blank=True, null=True)
     vintage = models.PositiveIntegerField(blank=True, null=True)
     grape_varieties = models.CharField(max_length=255, blank=True, null=True)
+    rating = models.DecimalField(max_digits=2, decimal_places=1, blank=True, null=True,help_text="Rating from 0.0 to 5.0",validators=[
+        MinValueValidator(0.0),
+        MaxValueValidator(5.0),
+    ])
     wine_type = models.CharField(
         max_length=50,
         choices=[

@@ -17,7 +17,13 @@ class WineSerializer(serializers.ModelSerializer):
             "notes",
             "bottle_count",
             "in_stock_count",
+            "rating",
         ]
+    def validate_rating(self, value):
+        if value is not None and (value < 0.0 or value > 5.0):
+            raise serializers.ValidationError("Rating must be between 0.0 and 5.0")
+        return value
+    
 class BottleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bottle
