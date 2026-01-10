@@ -25,12 +25,13 @@ class WineSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Rating must be between 0.0 and 5.0")
         return value
     
-class BottleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Bottle
-        fields = '__all__'
-
 class StoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
         fields = '__all__' 
+class BottleSerializer(serializers.ModelSerializer):
+    store = StoreSerializer(read_only=True)
+    class Meta:
+        model = Bottle
+        fields = '__all__'
+
