@@ -89,7 +89,7 @@ This project is configured to run in a Docker container for development.
 
 ### Project Structure
 
-- `cellarum_backend/`: Main Django project directory
+- `cellarium_backend/`: Main Django project directory
 - `winemanager/`: Django app for wine management
 - `Dockerfile`: Docker configuration for the application
 - `docker-compose.yml`: Docker Compose configuration

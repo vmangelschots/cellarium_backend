@@ -4,9 +4,9 @@ Purpose: make AI agents effective immediately in this Django + DRF repo by codif
 
 ## Architecture
 - Django 5 + DRF app with a single domain app: [winemanager](../winemanager/).
-- API is namespaced under `/api` via [project URLs](../cellarum_backend/urls.py) and DRF `DefaultRouter` in [winemanager/urls.py](../winemanager/urls.py).
-- Auth: JWT via SimpleJWT endpoints exposed at `/api/auth/token/` and `/api/auth/token/refresh/` in [project URLs](../cellarum_backend/urls.py). Default permission is authenticated.
-- DB: SQLite (dev) configured in [settings.py](../cellarum_backend/settings.py). CORS is fully open for development.
+- API is namespaced under `/api` via [project URLs](../cellarium_backend/urls.py) and DRF `DefaultRouter` in [winemanager/urls.py](../winemanager/urls.py).
+- Auth: JWT via SimpleJWT endpoints exposed at `/api/auth/token/` and `/api/auth/token/refresh/` in [project URLs](../cellarium_backend/urls.py). Default permission is authenticated.
+- DB: SQLite (dev) configured in [settings.py](../cellarium_backend/settings.py). CORS is fully open for development.
 
 ## Key Patterns
 - ViewSets + Router: Endpoints are implemented as `ModelViewSet`s and registered in [winemanager/urls.py](../winemanager/urls.py) with `DefaultRouter`.
@@ -15,7 +15,7 @@ Purpose: make AI agents effective immediately in this Django + DRF repo by codif
   - Stores: [StoreViewSet](../winemanager/views.py) is a standard CRUD set.
 - Serialization: [WineSerializer](../winemanager/serializers.py) includes computed, read-only fields `bottle_count` and `in_stock_count` and validates `rating` bounds. Other serializers are straight `ModelSerializer`s.
 - Models: See [winemanager/models.py](../winemanager/models.py) for `Wine`, `Bottle`, `Store`. `Bottle` links to `Wine` and optional `Store`; `Wine.rating` is a `Decimal` constrained to 0.0–5.0.
-- Permissions/Auth: `REST_FRAMEWORK` in [settings.py](../cellarum_backend/settings.py) sets `IsAuthenticated` globally; use JWT Authorization headers on API calls.
+- Permissions/Auth: `REST_FRAMEWORK` in [settings.py](../cellarium_backend/settings.py) sets `IsAuthenticated` globally; use JWT Authorization headers on API calls.
 
 ## Developer Workflow (Docker-first)
 - Build: `docker-compose build`
@@ -47,8 +47,8 @@ Required Python deps used in code/settings: `Django`, `djangorestframework`, `dj
 - When changing models, create a migration and run it: `docker-compose run web python manage.py makemigrations && docker-compose run web python manage.py migrate`.
 
 ## Where to Look
-- Settings and global DRF/CORS/JWT config: [cellarum_backend/settings.py](../cellarum_backend/settings.py)
-- Project URLs + JWT endpoints: [cellarum_backend/urls.py](../cellarum_backend/urls.py)
+- Settings and global DRF/CORS/JWT config: [cellarium_backend/settings.py](../cellarium_backend/settings.py)
+- Project URLs + JWT endpoints: [cellarium_backend/urls.py](../cellarium_backend/urls.py)
 - App routing: [winemanager/urls.py](../winemanager/urls.py)
 - Domain logic: [winemanager/models.py](../winemanager/models.py), [winemanager/views.py](../winemanager/views.py), [winemanager/serializers.py](../winemanager/serializers.py)
 - Container/dev workflow: [docker-compose.yml](../docker-compose.yml), [Dockerfile](../Dockerfile), [README.md](../README.md)
