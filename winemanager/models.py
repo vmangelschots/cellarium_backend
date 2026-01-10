@@ -24,7 +24,8 @@ class Wine(models.Model):
         null=True,
     )
 
-    notes = models.TextField(blank=True)   
+    notes = models.TextField(blank=True)
+    image = models.ImageField(upload_to='wines/%Y/%m/%d/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} ({self.vintage})" if self.vintage else self.name

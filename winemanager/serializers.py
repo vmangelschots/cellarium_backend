@@ -15,6 +15,7 @@ class WineSerializer(serializers.ModelSerializer):
             "grape_varieties",
             "wine_type",
             "notes",
+            "image",
             "bottle_count",
             "in_stock_count",
             "rating",
