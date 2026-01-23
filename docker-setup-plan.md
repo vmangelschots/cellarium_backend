@@ -1,4 +1,4 @@
-# Docker Development Setup Plan for Cellarium Backend
+P# Docker Development Setup Plan for Cellarium Backend
 
 ## Project Overview
 - Django 5.2.3 application
