@@ -9,8 +9,11 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+import os
+import re
 from datetime import timedelta
 from pathlib import Path
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-&xnd(6^08zxyt9nv1+##bf$g(^u65=3b)c*k7vi(r@rc&f+_5g'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-&xnd(6^08zxyt9nv1+##bf$g(^u65=3b)c*k7vi(r@rc&f+_5g')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 
 # Application definition
@@ -45,6 +48,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -77,12 +81,37 @@ WSGI_APPLICATION = 'cellarium_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Get database URL from environment, default to SQLite for development
+DATABASE_URL = config('DATABASE_URL', default='sqlite:///db.sqlite3')
+
+if DATABASE_URL.startswith('sqlite'):
+    # SQLite configuration for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+elif DATABASE_URL.startswith('postgres'):
+    # PostgreSQL configuration for production
+    # Parse DATABASE_URL: postgresql://user:password@host:port/dbname
+    match = re.match(r'postgresql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', DATABASE_URL)
+    if match:
+        user, password, host, port, dbname = match.groups()
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': dbname,
+                'USER': user,
+                'PASSWORD': password,
+                'HOST': host,
+                'PORT': port,
+            }
+        }
+    else:
+        raise ValueError(f"Invalid DATABASE_URL format: {DATABASE_URL}")
+else:
+    raise ValueError(f"Unsupported database type in DATABASE_URL: {DATABASE_URL}")
 
 
 # Password validation
@@ -128,8 +157,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-ALLOWED_HOSTS = ['*'] 
-CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
+
+# If not allowing all origins, specify allowed origins
+if not CORS_ALLOW_ALL_ORIGINS:
+    CORS_ALLOWED_ORIGINS = config(
+        'CORS_ALLOWED_ORIGINS',
+        default='http://localhost:3000,http://127.0.0.1:3000',
+        cast=Csv()
+    )
 
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -152,6 +190,13 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 
+# CSRF Configuration
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='https://cellarium-backend.mangelschots.org',
+    cast=Csv()
+)
+
 REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
@@ -169,3 +214,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+# WhiteNoise Configuration for static file serving
+WHITENOISE_AUTOREFRESH = DEBUG  # Enable auto-refresh in development
+WHITENOISE_USE_FIPS_COMPLIANT_STORAGE = not DEBUG  # Use for production security

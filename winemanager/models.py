@@ -15,10 +15,10 @@ class Wine(models.Model):
     wine_type = models.CharField(
         max_length=50,
         choices=[
-            ("red", "Red"),
-            ("white", "White"),
+            ("red", "Rood"),
+            ("white", "Wit"),
             ("rosé", "Rosé"),
-            ("sparkling", "Sparkling"),
+            ("sparkling", "Schuimwijn"),
         ],
         blank=True,
         null=True,

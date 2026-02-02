@@ -12,6 +12,10 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=True
+      - DATABASE_URL=sqlite:///db.sqlite3
+      - ALLOWED_HOSTS=*
+      - CORS_ALLOW_ALL_ORIGINS=True
+      - SECRET_KEY=django-insecure-&xnd(6^08zxyt9nv1+##bf$g(^u65=3b)c*k7vi(r@rc&f+_5g
 
 volumes:
   static_volume:

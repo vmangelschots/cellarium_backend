@@ -10,7 +10,12 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 import os
 
 from django.core.wsgi import get_wsgi_application
+from whitenoise import WhiteNoise
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cellarium_backend.settings')
 
 application = get_wsgi_application()
+
+# Wrap with WhiteNoise for static file serving (activates in production when DEBUG=False)
+if not os.environ.get('DEBUG', 'True').lower() == 'true':
+    application = WhiteNoise(application, root=os.path.join(os.path.dirname(__file__), '../staticfiles'))

@@ -6,3 +6,6 @@ djangorestframework-simplejwt
 Pillow
 gunicorn
 coverage
+python-decouple
+psycopg2-binary
+whitenoise
