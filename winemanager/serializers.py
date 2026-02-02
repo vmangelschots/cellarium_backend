@@ -1,7 +1,8 @@
 from rest_framework import serializers
+from django_countries.serializers import CountryFieldMixin
 from .models import Wine, Bottle, Store
 
-class WineSerializer(serializers.ModelSerializer):
+class WineSerializer(CountryFieldMixin, serializers.ModelSerializer):
     bottle_count = serializers.IntegerField(read_only=True)
     in_stock_count = serializers.IntegerField(read_only=True)
     class Meta:

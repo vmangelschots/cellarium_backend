@@ -1,11 +1,12 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django_countries.fields import CountryField
 
 class Wine(models.Model):
     name = models.CharField(max_length=200)
     #producer = models.CharField(max_length=200, blank=True, null=True)
     region = models.CharField(max_length=200, blank=True, null=True)
-    country = models.CharField(max_length=100, blank=True, null=True)
+    country = CountryField(blank=True, null=True)
     vintage = models.PositiveIntegerField(blank=True, null=True)
     grape_varieties = models.CharField(max_length=255, blank=True, null=True)
     rating = models.DecimalField(max_digits=2, decimal_places=1, blank=True, null=True,help_text="Rating from 0.0 to 5.0",validators=[

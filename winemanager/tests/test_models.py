@@ -12,7 +12,7 @@ class WineModelTests(TestCase):
         wine = Wine.objects.create(
             name="Chateau Margaux 2015",
             region="Bordeaux",
-            country="France",
+            country="FR",
             vintage=2015,
             grape_varieties="Cabernet Sauvignon, Merlot",
             rating=4.8,
@@ -21,7 +21,7 @@ class WineModelTests(TestCase):
         )
         self.assertEqual(wine.name, "Chateau Margaux 2015")
         self.assertEqual(wine.region, "Bordeaux")
-        self.assertEqual(wine.country, "France")
+        self.assertEqual(str(wine.country), "FR")
         self.assertEqual(wine.vintage, 2015)
         self.assertEqual(wine.grape_varieties, "Cabernet Sauvignon, Merlot")
         self.assertEqual(wine.rating, Decimal("4.8"))

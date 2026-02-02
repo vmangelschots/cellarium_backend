@@ -12,7 +12,7 @@ class WineSerializerTests(TestCase):
         self.wine_data = {
             "name": "Test Wine",
             "region": "Napa Valley",
-            "country": "USA",
+            "country": "US",
             "vintage": 2020,
             "grape_varieties": "Cabernet Sauvignon",
             "wine_type": "red",
@@ -28,7 +28,7 @@ class WineSerializerTests(TestCase):
         
         self.assertEqual(data["name"], "Test Wine")
         self.assertEqual(data["region"], "Napa Valley")
-        self.assertEqual(data["country"], "USA")
+        self.assertEqual(data["country"], "US")
         self.assertEqual(data["vintage"], 2020)
         self.assertEqual(data["grape_varieties"], "Cabernet Sauvignon")
         self.assertEqual(data["wine_type"], "red")
@@ -60,7 +60,7 @@ class WineSerializerTests(TestCase):
         """Test deserializing valid wine data"""
         data = {
             "name": "New Wine",
-            "country": "Italy",
+            "country": "IT",
             "vintage": 2019,
             "rating": 3.5
         }
@@ -69,7 +69,7 @@ class WineSerializerTests(TestCase):
         wine = serializer.save()
         
         self.assertEqual(wine.name, "New Wine")
-        self.assertEqual(wine.country, "Italy")
+        self.assertEqual(str(wine.country), "IT")
         self.assertEqual(wine.vintage, 2019)
         self.assertEqual(wine.rating, Decimal("3.5"))
 

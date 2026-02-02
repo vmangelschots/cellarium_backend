@@ -14,7 +14,7 @@ class WineAPICRUDTests(APITestCase):
         self.wine = Wine.objects.create(
             name="Test Wine",
             region="Bordeaux",
-            country="France",
+            country="FR",
             vintage=2020,
             grape_varieties="Cabernet Sauvignon",
             wine_type="red",
@@ -41,7 +41,7 @@ class WineAPICRUDTests(APITestCase):
         data = {
             "name": "New Wine",
             "region": "Tuscany",
-            "country": "Italy",
+            "country": "IT",
             "vintage": 2019,
             "grape_varieties": "Sangiovese",
             "wine_type": "red",
@@ -52,7 +52,7 @@ class WineAPICRUDTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Wine.objects.count(), 2)
         self.assertEqual(response.data['name'], "New Wine")
-        self.assertEqual(response.data['country'], "Italy")
+        self.assertEqual(response.data['country'], "IT")
 
     def test_create_wine_minimal(self):
         """Test creating wine with only required fields"""
@@ -73,7 +73,7 @@ class WineAPICRUDTests(APITestCase):
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], "Test Wine")
-        self.assertEqual(response.data['country'], "France")
+        self.assertEqual(response.data['country'], "FR")
 
     def test_retrieve_wine_not_found(self):
         """Test retrieving a wine that doesn't exist returns 404"""
@@ -86,7 +86,7 @@ class WineAPICRUDTests(APITestCase):
         data = {
             "name": "Updated Wine",
             "region": "Napa",
-            "country": "USA",
+            "country": "US",
             "vintage": 2021,
             "grape_varieties": "Merlot",
             "wine_type": "red",
@@ -97,7 +97,7 @@ class WineAPICRUDTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.wine.refresh_from_db()
         self.assertEqual(self.wine.name, "Updated Wine")
-        self.assertEqual(self.wine.country, "USA")
+        self.assertEqual(str(self.wine.country), "US")
 
     def test_update_wine_patch(self):
         """Test partial update of wine with PATCH"""
@@ -107,7 +107,7 @@ class WineAPICRUDTests(APITestCase):
         self.wine.refresh_from_db()
         self.assertEqual(self.wine.name, "Patched Wine")
         self.assertEqual(self.wine.rating, Decimal("5.0"))
-        self.assertEqual(self.wine.country, "France")  # Unchanged
+        self.assertEqual(str(self.wine.country), "FR")  # Unchanged
 
     def test_delete_wine(self):
         """Test deleting a wine"""
@@ -141,9 +141,9 @@ class WineSearchFilterTests(APITestCase):
 
     def setUp(self):
         """Create test wines"""
-        Wine.objects.create(name="Bordeaux Supreme", country="France", region="Bordeaux")
-        Wine.objects.create(name="Chianti Classico", country="Italy", region="Tuscany")
-        Wine.objects.create(name="Napa Cabernet", country="USA", region="Napa Valley", grape_varieties="Cabernet Sauvignon")
+        Wine.objects.create(name="Bordeaux Supreme", country="FR", region="Bordeaux")
+        Wine.objects.create(name="Chianti Classico", country="IT", region="Tuscany")
+        Wine.objects.create(name="Napa Cabernet", country="US", region="Napa Valley", grape_varieties="Cabernet Sauvignon")
         self.list_url = reverse('wine-list')
 
     def test_search_by_name(self):
@@ -155,7 +155,7 @@ class WineSearchFilterTests(APITestCase):
 
     def test_search_by_country(self):
         """Test searching wines by country"""
-        response = self.client.get(self.list_url, {'search': 'Italy'})
+        response = self.client.get(self.list_url, {'search': 'IT'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], "Chianti Classico")

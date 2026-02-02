@@ -14,7 +14,7 @@ Purpose: make AI agents effective immediately in this Django + DRF repo by codif
   - Bottles: [BottleViewSet](../winemanager/views.py) supports filtering by `wine` and defines idempotent side-effect actions via `@action(detail=True)` (`consume`, `undo_consume`).
   - Stores: [StoreViewSet](../winemanager/views.py) is a standard CRUD set.
 - Serialization: [WineSerializer](../winemanager/serializers.py) includes computed, read-only fields `bottle_count` and `in_stock_count` and validates `rating` bounds. Other serializers are straight `ModelSerializer`s.
-- Models: See [winemanager/models.py](../winemanager/models.py) for `Wine`, `Bottle`, `Store`. `Bottle` links to `Wine` and optional `Store`; `Wine.rating` is a `Decimal` constrained to 0.0–5.0.
+- Models: See [winemanager/models.py](../winemanager/models.py) for `Wine`, `Bottle`, `Store`. `Bottle` links to `Wine` and optional `Store`; `Wine.rating` is a `Decimal` constrained to 0.0–5.0; `Wine.country` uses ISO Alpha-2 country codes via django-countries.
 - Permissions/Auth: `REST_FRAMEWORK` in [settings.py](../cellarium_backend/settings.py) sets `IsAuthenticated` globally; use JWT Authorization headers on API calls.
 
 ## Developer Workflow (Docker-first)
@@ -26,17 +26,18 @@ Purpose: make AI agents effective immediately in this Django + DRF repo by codif
 - Logs: `docker-compose logs -f`
 - Dependencies: edit [requirements.txt](../requirements.txt) then `docker-compose build`.
 
-Required Python deps used in code/settings: `Django`, `djangorestframework`, `django-cors-headers`, `django-filter`, `djangorestframework-simplejwt`.
+Required Python deps used in code/settings: `Django`, `djangorestframework`, `django-cors-headers`, `django-countries`, `django-filter`, `djangorestframework-simplejwt`.
 
 ## API Usage Examples
 - Obtain tokens:
   - POST `/api/auth/token/` with `{"username":"...","password":"..."}` → `{ access, refresh }`
   - POST `/api/auth/token/refresh/` with `{ "refresh": "..." }` → `{ access }`
 - Authenticated requests: send `Authorization: Bearer <access>`.
-- Wines: GET `/api/wines/?search=pinot&ordering=-vintage`
-  - Search fields: `name`, `country`, `region`, `grape_varieties`, `wine_type`
+- Wines: GET `/api/wines/?search=FR&ordering=-vintage`
+  - Search fields: `name`, `country` (ISO Alpha-2 code), `region`, `grape_varieties`, `wine_type`
   - Ordering fields: `name`, `vintage`, `country`, `bottle_count`, `in_stock_count`
   - Response includes `bottle_count` and `in_stock_count` (from queryset annotations).
+  - Country field uses ISO Alpha-2 codes (e.g., 'FR', 'IT', 'US', 'ES'). Example: `POST /api/wines/` with `{"name": "Bordeaux", "country": "FR"}`
 - Bottles: GET `/api/bottles/?wine=<wine_id>`; POST `/api/bottles/<id>/consume/`; POST `/api/bottles/<id>/undo_consume/` (both idempotent).
 
 ## Conventions to Follow
@@ -55,4 +56,5 @@ Required Python deps used in code/settings: `Django`, `djangorestframework`, `dj
 
 ## Gotchas
 - The project enforces auth by default; unauthenticated API calls will fail unless endpoints override permissions.
-- Ensure `django-filter` and `djangorestframework-simplejwt` are installed to match settings; add them to [requirements.txt](../requirements.txt) if missing and rebuild.
+- Ensure `django-filter`, `django-countries`, and `djangorestframework-simplejwt` are installed to match settings; add them to [requirements.txt](../requirements.txt) if missing and rebuild.
+- The `country` field on Wine uses ISO Alpha-2 codes (e.g., 'FR', 'IT', 'US'). Full country names (e.g., 'France') will be rejected.

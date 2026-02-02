@@ -181,9 +181,9 @@ class SearchOrderingIntegrationTests(APITestCase):
     def test_search_with_bottle_count_ordering(self):
         """Test combining search with bottle_count ordering"""
         # Create wines with different bottle counts
-        wine1 = Wine.objects.create(name="French Bordeaux", country="France")
-        wine2 = Wine.objects.create(name="French Burgundy", country="France")
-        wine3 = Wine.objects.create(name="Italian Chianti", country="Italy")
+        wine1 = Wine.objects.create(name="French Bordeaux", country="FR")
+        wine2 = Wine.objects.create(name="French Burgundy", country="FR")
+        wine3 = Wine.objects.create(name="Italian Chianti", country="IT")
         
         # Different bottle counts
         Bottle.objects.create(wine=wine1)
