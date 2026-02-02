@@ -31,8 +31,16 @@ class StoreSerializer(serializers.ModelSerializer):
         model = Store
         fields = '__all__' 
 class BottleSerializer(serializers.ModelSerializer):
-    store = StoreSerializer(read_only=True)
+    store_details = StoreSerializer(source='store', read_only=True)
     class Meta:
         model = Bottle
         fields = '__all__'
+    
+    def to_representation(self, instance):
+        """Custom representation to show nested store details"""
+        representation = super().to_representation(instance)
+        # Replace store ID with nested store object for reading
+        if instance.store:
+            representation['store'] = StoreSerializer(instance.store).data
+        return representation
 

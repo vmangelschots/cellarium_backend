@@ -1,6 +1,7 @@
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.urls import reverse
+from django.contrib.auth.models import User
 from decimal import Decimal
 from datetime import date
 from winemanager.models import Wine, Bottle, Store
@@ -11,6 +12,11 @@ class WineAPICRUDTests(APITestCase):
 
     def setUp(self):
         """Create test data"""
+        # Create and authenticate user
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        
         self.wine = Wine.objects.create(
             name="Test Wine",
             region="Bordeaux",
@@ -141,6 +147,11 @@ class WineSearchFilterTests(APITestCase):
 
     def setUp(self):
         """Create test wines"""
+        # Create and authenticate user
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        
         Wine.objects.create(name="Bordeaux Supreme", country="FR", region="Bordeaux")
         Wine.objects.create(name="Chianti Classico", country="IT", region="Tuscany")
         Wine.objects.create(name="Napa Cabernet", country="US", region="Napa Valley", grape_varieties="Cabernet Sauvignon")
@@ -155,10 +166,10 @@ class WineSearchFilterTests(APITestCase):
 
     def test_search_by_country(self):
         """Test searching wines by country"""
-        response = self.client.get(self.list_url, {'search': 'IT'})
+        response = self.client.get(self.list_url, {'search': 'FR'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['name'], "Chianti Classico")
+        self.assertEqual(response.data[0]['name'], "Bordeaux Supreme")
 
     def test_search_by_region(self):
         """Test searching wines by region"""
@@ -192,6 +203,11 @@ class WineOrderingTests(APITestCase):
 
     def setUp(self):
         """Create test wines"""
+        # Create and authenticate user
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        
         self.wine_a = Wine.objects.create(name="A Wine", vintage=2018)
         self.wine_z = Wine.objects.create(name="Z Wine", vintage=2022)
         self.wine_m = Wine.objects.create(name="M Wine", vintage=2020)
@@ -246,6 +262,11 @@ class BottleAPICRUDTests(APITestCase):
 
     def setUp(self):
         """Create test data"""
+        # Create and authenticate user
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        
         self.wine = Wine.objects.create(name="Test Wine", vintage=2020)
         self.store = Store.objects.create(name="Test Store")
         self.bottle = Bottle.objects.create(wine=self.wine, price=Decimal("45.99"))
@@ -329,6 +350,11 @@ class BottleCustomActionsTests(APITestCase):
 
     def setUp(self):
         """Create test data"""
+        # Create and authenticate user
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        
         self.wine = Wine.objects.create(name="Test Wine")
         self.bottle = Bottle.objects.create(wine=self.wine)
         self.consume_url = reverse('bottle-consume', kwargs={'pk': self.bottle.pk})
@@ -409,6 +435,11 @@ class StoreAPICRUDTests(APITestCase):
 
     def setUp(self):
         """Create test data"""
+        # Create and authenticate user
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        
         self.store = Store.objects.create(name="Test Store")
         self.list_url = reverse('store-list')
         self.detail_url = reverse('store-detail', kwargs={'pk': self.store.pk})

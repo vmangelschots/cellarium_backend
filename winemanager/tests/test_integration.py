@@ -1,6 +1,7 @@
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth.models import User
 from rest_framework import status
 from decimal import Decimal
 from datetime import date
@@ -9,6 +10,12 @@ from winemanager.models import Wine, Bottle, Store
 
 class ComplexWorkflowTests(APITestCase):
     """Test cases for complex workflows integrating multiple models"""
+
+    def setUp(self):
+        """Create test user and authenticate"""
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
 
     def test_wine_bottle_consume_workflow(self):
         """Test complete workflow: create wine -> bottles -> consume -> verify counts"""
@@ -137,6 +144,12 @@ class CascadeDeleteTests(TestCase):
 class MultipleBottleTests(APITestCase):
     """Test cases for multiple bottles of same wine"""
 
+    def setUp(self):
+        """Create test user and authenticate"""
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
     def test_multiple_bottles_same_wine(self):
         """Test wine can have multiple bottles tracked correctly"""
         wine = Wine.objects.create(name="Multi Bottle Wine")
@@ -177,6 +190,12 @@ class MultipleBottleTests(APITestCase):
 
 class SearchOrderingIntegrationTests(APITestCase):
     """Test cases for search and ordering integration"""
+
+    def setUp(self):
+        """Create test user and authenticate"""
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
 
     def test_search_with_bottle_count_ordering(self):
         """Test combining search with bottle_count ordering"""

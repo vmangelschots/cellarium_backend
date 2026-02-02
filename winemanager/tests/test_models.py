@@ -33,7 +33,7 @@ class WineModelTests(TestCase):
         wine = Wine.objects.create(name="Simple Wine")
         self.assertEqual(wine.name, "Simple Wine")
         self.assertIsNone(wine.region)
-        self.assertIsNone(wine.country)
+        self.assertEqual(wine.country.code, None)  # CountryField returns Country object
         self.assertIsNone(wine.vintage)
         self.assertIsNone(wine.grape_varieties)
         self.assertIsNone(wine.rating)
@@ -99,7 +99,7 @@ class WineModelTests(TestCase):
             wine_type=None
         )
         self.assertIsNone(wine.region)
-        self.assertIsNone(wine.country)
+        self.assertEqual(wine.country.code, None)  # CountryField returns Country object
         self.assertIsNone(wine.vintage)
         self.assertIsNone(wine.grape_varieties)
         self.assertIsNone(wine.rating)
