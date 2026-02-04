@@ -5,10 +5,11 @@ import django_countries.fields
 from django.db import migrations, models
 
 
-def clear_country_data(apps, schema_editor):
-    """Clear existing country data before changing field type to CountryField."""
+def clear_country_and_region_data(apps, schema_editor):
+    """Clear existing country and region data before changing field types."""
     Wine = apps.get_model("winemanager", "Wine")
     Wine.objects.filter(country__isnull=False).update(country=None)
+    Wine.objects.filter(region__isnull=False).update(region=None)
 
 
 class Migration(migrations.Migration):
@@ -17,8 +18,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Clear existing country data to prevent crash when changing to max_length=2
-        migrations.RunPython(clear_country_data, migrations.RunPython.noop),
+        # Clear existing country and region data to prevent crashes when changing field types
+        migrations.RunPython(clear_country_and_region_data, migrations.RunPython.noop),
         migrations.AlterField(
             model_name="wine",
             name="country",
