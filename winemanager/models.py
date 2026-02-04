@@ -2,10 +2,21 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django_countries.fields import CountryField
 
+class Region(models.Model):
+    name = models.CharField(max_length=200)
+    country = CountryField()
+    
+    class Meta:
+        ordering = ['country', 'name']
+        unique_together = ['name', 'country']
+    
+    def __str__(self):
+        return f"{self.name} ({self.country})"
+
 class Wine(models.Model):
     name = models.CharField(max_length=200)
     #producer = models.CharField(max_length=200, blank=True, null=True)
-    region = models.CharField(max_length=200, blank=True, null=True)
+    region = models.ForeignKey('Region', on_delete=models.SET_NULL, blank=True, null=True, related_name='wines')
     country = CountryField(blank=True, null=True)
     vintage = models.PositiveIntegerField(blank=True, null=True)
     grape_varieties = models.CharField(max_length=255, blank=True, null=True)

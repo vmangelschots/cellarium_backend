@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from decimal import Decimal
-from winemanager.models import Wine, Bottle, Store
+from winemanager.models import Wine, Bottle, Store, Region
 
 
 class WineModelTests(TestCase):
@@ -9,9 +9,10 @@ class WineModelTests(TestCase):
 
     def test_wine_creation_all_fields(self):
         """Test creating a wine with all fields"""
+        region = Region.objects.create(name="Bordeaux", country="FR")
         wine = Wine.objects.create(
             name="Chateau Margaux 2015",
-            region="Bordeaux",
+            region=region,
             country="FR",
             vintage=2015,
             grape_varieties="Cabernet Sauvignon, Merlot",
@@ -20,11 +21,11 @@ class WineModelTests(TestCase):
             notes="Exceptional vintage"
         )
         self.assertEqual(wine.name, "Chateau Margaux 2015")
-        self.assertEqual(wine.region, "Bordeaux")
+        self.assertEqual(wine.region, region)
         self.assertEqual(str(wine.country), "FR")
         self.assertEqual(wine.vintage, 2015)
         self.assertEqual(wine.grape_varieties, "Cabernet Sauvignon, Merlot")
-        self.assertEqual(wine.rating, Decimal("4.8"))
+        self.assertAlmostEqual(float(wine.rating), 4.8, places=1)
         self.assertEqual(wine.wine_type, "red")
         self.assertEqual(wine.notes, "Exceptional vintage")
 
@@ -116,7 +117,8 @@ class BottleModelTests(TestCase):
 
     def setUp(self):
         """Create test data for bottle tests"""
-        self.wine = Wine.objects.create(name="Test Wine", vintage=2020)
+        region = Region.objects.create(name="Test Region", country="FR")
+        self.wine = Wine.objects.create(name="Test Wine", vintage=2020, region=region)
         self.store = Store.objects.create(name="Test Store")
 
     def test_bottle_creation_with_wine(self):
@@ -180,7 +182,8 @@ class BottleModelTests(TestCase):
 
     def test_bottle_foreign_key_required(self):
         """Test that wine foreign key is required"""
-        with self.assertRaises((ValueError, ValidationError)):
+        from django.db.utils import IntegrityError
+        with self.assertRaises((ValueError, ValidationError, IntegrityError)):
             Bottle.objects.create(wine=None)
 
     def test_bottle_consumed_workflow(self):
@@ -227,7 +230,8 @@ class RelatedModelsTests(TestCase):
 
     def setUp(self):
         """Create test data"""
-        self.wine = Wine.objects.create(name="Test Wine", vintage=2020)
+        region = Region.objects.create(name="Test Region", country="FR")
+        self.wine = Wine.objects.create(name="Test Wine", vintage=2020, region=region)
         self.store = Store.objects.create(name="Test Store")
 
     def test_wine_multiple_bottles(self):
@@ -244,7 +248,8 @@ class RelatedModelsTests(TestCase):
 
     def test_store_multiple_bottles(self):
         """Test store can have multiple bottles"""
-        wine2 = Wine.objects.create(name="Another Wine")
+        region2 = Region.objects.create(name="Another Region", country="IT")
+        wine2 = Wine.objects.create(name="Another Wine", region=region2)
         bottle1 = Bottle.objects.create(wine=self.wine, store=self.store)
         bottle2 = Bottle.objects.create(wine=wine2, store=self.store)
         

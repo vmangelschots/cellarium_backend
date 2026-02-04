@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from decimal import Decimal
 from datetime import date
-from winemanager.models import Wine, Bottle, Store
+from winemanager.models import Wine, Bottle, Store, Region
 
 
 class WineAPICRUDTests(APITestCase):
@@ -17,9 +17,10 @@ class WineAPICRUDTests(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
         
+        self.region = Region.objects.create(name="Bordeaux", country="FR")
         self.wine = Wine.objects.create(
             name="Test Wine",
-            region="Bordeaux",
+            region=self.region,
             country="FR",
             vintage=2020,
             grape_varieties="Cabernet Sauvignon",
@@ -44,9 +45,10 @@ class WineAPICRUDTests(APITestCase):
 
     def test_create_wine_valid(self):
         """Test creating wine with valid data"""
+        region_tuscany = Region.objects.create(name="Tuscany", country="IT")
         data = {
             "name": "New Wine",
-            "region": "Tuscany",
+            "region": region_tuscany.id,
             "country": "IT",
             "vintage": 2019,
             "grape_varieties": "Sangiovese",
@@ -89,9 +91,10 @@ class WineAPICRUDTests(APITestCase):
 
     def test_update_wine_put(self):
         """Test full update of wine with PUT"""
+        region_napa = Region.objects.create(name="Napa", country="US")
         data = {
             "name": "Updated Wine",
-            "region": "Napa",
+            "region": region_napa.id,
             "country": "US",
             "vintage": 2021,
             "grape_varieties": "Merlot",
@@ -152,9 +155,13 @@ class WineSearchFilterTests(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
         
-        Wine.objects.create(name="Bordeaux Supreme", country="FR", region="Bordeaux")
-        Wine.objects.create(name="Chianti Classico", country="IT", region="Tuscany")
-        Wine.objects.create(name="Napa Cabernet", country="US", region="Napa Valley", grape_varieties="Cabernet Sauvignon")
+        region_bordeaux = Region.objects.create(name="Bordeaux", country="FR")
+        region_tuscany = Region.objects.create(name="Tuscany", country="IT")
+        region_napa = Region.objects.create(name="Napa Valley", country="US")
+        
+        Wine.objects.create(name="Bordeaux Supreme", country="FR", region=region_bordeaux)
+        Wine.objects.create(name="Chianti Classico", country="IT", region=region_tuscany)
+        Wine.objects.create(name="Napa Cabernet", country="US", region=region_napa, grape_varieties="Cabernet Sauvignon")
         self.list_url = reverse('wine-list')
 
     def test_search_by_name(self):
@@ -208,9 +215,10 @@ class WineOrderingTests(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
         
-        self.wine_a = Wine.objects.create(name="A Wine", vintage=2018)
-        self.wine_z = Wine.objects.create(name="Z Wine", vintage=2022)
-        self.wine_m = Wine.objects.create(name="M Wine", vintage=2020)
+        region = Region.objects.create(name="Test Region", country="FR")
+        self.wine_a = Wine.objects.create(name="A Wine", vintage=2018, region=region)
+        self.wine_z = Wine.objects.create(name="Z Wine", vintage=2022, region=region)
+        self.wine_m = Wine.objects.create(name="M Wine", vintage=2020, region=region)
         
         # Create bottles for ordering tests
         Bottle.objects.create(wine=self.wine_a)
@@ -267,7 +275,8 @@ class BottleAPICRUDTests(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
         
-        self.wine = Wine.objects.create(name="Test Wine", vintage=2020)
+        region = Region.objects.create(name="Test Region", country="FR")
+        self.wine = Wine.objects.create(name="Test Wine", vintage=2020, region=region)
         self.store = Store.objects.create(name="Test Store")
         self.bottle = Bottle.objects.create(wine=self.wine, price=Decimal("45.99"))
         
@@ -326,7 +335,8 @@ class BottleAPICRUDTests(APITestCase):
 
     def test_filter_bottles_by_wine(self):
         """Test filtering bottles by wine"""
-        wine2 = Wine.objects.create(name="Another Wine")
+        region2 = Region.objects.create(name="Another Region", country="IT")
+        wine2 = Wine.objects.create(name="Another Wine", region=region2)
         Bottle.objects.create(wine=wine2)
         
         response = self.client.get(self.list_url, {'wine': self.wine.id})
@@ -355,7 +365,8 @@ class BottleCustomActionsTests(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
         
-        self.wine = Wine.objects.create(name="Test Wine")
+        region = Region.objects.create(name="Test Region", country="FR")
+        self.wine = Wine.objects.create(name="Test Wine", region=region)
         self.bottle = Bottle.objects.create(wine=self.wine)
         self.consume_url = reverse('bottle-consume', kwargs={'pk': self.bottle.pk})
         self.undo_consume_url = reverse('bottle-undo-consume', kwargs={'pk': self.bottle.pk})

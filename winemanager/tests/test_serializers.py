@@ -1,6 +1,6 @@
 from django.test import TestCase
 from decimal import Decimal
-from winemanager.models import Wine, Bottle, Store
+from winemanager.models import Wine, Bottle, Store, Region
 from winemanager.serializers import WineSerializer, BottleSerializer, StoreSerializer
 
 
@@ -9,9 +9,10 @@ class WineSerializerTests(TestCase):
 
     def setUp(self):
         """Create test data"""
+        self.region = Region.objects.create(name="Napa Valley", country="US")
         self.wine_data = {
             "name": "Test Wine",
-            "region": "Napa Valley",
+            "region": self.region,
             "country": "US",
             "vintage": 2020,
             "grape_varieties": "Cabernet Sauvignon",
@@ -27,7 +28,8 @@ class WineSerializerTests(TestCase):
         data = serializer.data
         
         self.assertEqual(data["name"], "Test Wine")
-        self.assertEqual(data["region"], "Napa Valley")
+        self.assertEqual(data["region"]["name"], "Napa Valley")
+        self.assertEqual(data["region"]["country"], "US")
         self.assertEqual(data["country"], "US")
         self.assertEqual(data["vintage"], 2020)
         self.assertEqual(data["grape_varieties"], "Cabernet Sauvignon")
@@ -58,8 +60,10 @@ class WineSerializerTests(TestCase):
 
     def test_wine_deserialization_valid(self):
         """Test deserializing valid wine data"""
+        region_it = Region.objects.create(name="Tuscany", country="IT")
         data = {
             "name": "New Wine",
+            "region": region_it.id,
             "country": "IT",
             "vintage": 2019,
             "rating": 3.5
@@ -136,7 +140,8 @@ class BottleSerializerTests(TestCase):
 
     def setUp(self):
         """Create test data"""
-        self.wine = Wine.objects.create(name="Test Wine", vintage=2020)
+        region = Region.objects.create(name="Test Region", country="FR")
+        self.wine = Wine.objects.create(name="Test Wine", vintage=2020, region=region)
         self.store = Store.objects.create(name="Test Store")
 
     def test_bottle_serialization_with_nested_store(self):

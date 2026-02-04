@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from rest_framework import status
 from decimal import Decimal
 from datetime import date
-from winemanager.models import Wine, Bottle, Store
+from winemanager.models import Wine, Bottle, Store, Region
 
 
 class ComplexWorkflowTests(APITestCase):
@@ -64,7 +64,8 @@ class ComplexWorkflowTests(APITestCase):
 
     def test_bottle_counts_update_on_consume(self):
         """Test that bottle counts update correctly when consuming"""
-        wine = Wine.objects.create(name="Count Test Wine")
+        region = Region.objects.create(name="Test Region", country="FR")
+        wine = Wine.objects.create(name="Count Test Wine", region=region)
         bottle1 = Bottle.objects.create(wine=wine)
         bottle2 = Bottle.objects.create(wine=wine)
         
@@ -88,7 +89,8 @@ class ComplexWorkflowTests(APITestCase):
 
     def test_in_stock_count_accuracy(self):
         """Test in_stock_count accuracy with mixed consumed/unconsumed bottles"""
-        wine = Wine.objects.create(name="Stock Test")
+        region = Region.objects.create(name="Test Region", country="FR")
+        wine = Wine.objects.create(name="Stock Test", region=region)
         
         # Create 5 bottles
         bottles = [Bottle.objects.create(wine=wine) for _ in range(5)]
@@ -110,7 +112,8 @@ class CascadeDeleteTests(TestCase):
 
     def test_wine_deletion_cascades_bottles(self):
         """Test that deleting wine cascades to bottles"""
-        wine = Wine.objects.create(name="Cascade Wine")
+        region = Region.objects.create(name="Test Region", country="FR")
+        wine = Wine.objects.create(name="Cascade Wine", region=region)
         bottle1 = Bottle.objects.create(wine=wine)
         bottle2 = Bottle.objects.create(wine=wine)
         
@@ -126,7 +129,8 @@ class CascadeDeleteTests(TestCase):
 
     def test_store_deletion_nullifies_bottles(self):
         """Test that deleting store sets bottle.store to NULL"""
-        wine = Wine.objects.create(name="Store Test Wine")
+        region = Region.objects.create(name="Test Region", country="FR")
+        wine = Wine.objects.create(name="Store Test Wine", region=region)
         store = Store.objects.create(name="Test Store")
         bottle = Bottle.objects.create(wine=wine, store=store)
         
@@ -152,7 +156,8 @@ class MultipleBottleTests(APITestCase):
 
     def test_multiple_bottles_same_wine(self):
         """Test wine can have multiple bottles tracked correctly"""
-        wine = Wine.objects.create(name="Multi Bottle Wine")
+        region = Region.objects.create(name="Test Region", country="FR")
+        wine = Wine.objects.create(name="Multi Bottle Wine", region=region)
         store1 = Store.objects.create(name="Store 1")
         store2 = Store.objects.create(name="Store 2")
         
@@ -174,7 +179,8 @@ class MultipleBottleTests(APITestCase):
 
     def test_consume_multiple_bottles_count(self):
         """Test consuming multiple bottles updates counts correctly"""
-        wine = Wine.objects.create(name="Consume Multi Wine")
+        region = Region.objects.create(name="Test Region", country="FR")
+        wine = Wine.objects.create(name="Consume Multi Wine", region=region)
         bottles = [Bottle.objects.create(wine=wine) for _ in range(4)]
         
         # Consume 2 bottles
@@ -200,9 +206,12 @@ class SearchOrderingIntegrationTests(APITestCase):
     def test_search_with_bottle_count_ordering(self):
         """Test combining search with bottle_count ordering"""
         # Create wines with different bottle counts
-        wine1 = Wine.objects.create(name="French Bordeaux", country="FR")
-        wine2 = Wine.objects.create(name="French Burgundy", country="FR")
-        wine3 = Wine.objects.create(name="Italian Chianti", country="IT")
+        region_fr = Region.objects.create(name="Bordeaux", country="FR")
+        region_it = Region.objects.create(name="Tuscany", country="IT")
+        
+        wine1 = Wine.objects.create(name="French Bordeaux", country="FR", region=region_fr)
+        wine2 = Wine.objects.create(name="French Burgundy", country="FR", region=region_fr)
+        wine3 = Wine.objects.create(name="Italian Chianti", country="IT", region=region_it)
         
         # Different bottle counts
         Bottle.objects.create(wine=wine1)
@@ -221,8 +230,9 @@ class SearchOrderingIntegrationTests(APITestCase):
 
     def test_filter_and_count_consistency(self):
         """Test that filtering and counts are consistent"""
-        wine1 = Wine.objects.create(name="Wine 1")
-        wine2 = Wine.objects.create(name="Wine 2")
+        region = Region.objects.create(name="Test Region", country="FR")
+        wine1 = Wine.objects.create(name="Wine 1", region=region)
+        wine2 = Wine.objects.create(name="Wine 2", region=region)
         
         # Create bottles
         Bottle.objects.create(wine=wine1)
@@ -239,7 +249,8 @@ class SearchOrderingIntegrationTests(APITestCase):
 
     def test_concurrent_bottle_operations(self):
         """Test multiple bottle operations maintain data consistency"""
-        wine = Wine.objects.create(name="Concurrent Test Wine")
+        region = Region.objects.create(name="Test Region", country="FR")
+        wine = Wine.objects.create(name="Concurrent Test Wine", region=region)
         
         # Create multiple bottles
         bottles = [Bottle.objects.create(wine=wine) for _ in range(3)]

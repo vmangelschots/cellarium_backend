@@ -10,11 +10,12 @@ Purpose: make AI agents effective immediately in this Django + DRF repo by codif
 
 ## Key Patterns
 - ViewSets + Router: Endpoints are implemented as `ModelViewSet`s and registered in [winemanager/urls.py](../winemanager/urls.py) with `DefaultRouter`.
-  - Wines: [WineViewSet](../winemanager/views.py) exposes search/order and annotates counts in `get_queryset()` (not in serializer).
+  - Wines: [WineViewSet](../winemanager/views.py) exposes search/order and annotates counts in `get_queryset()` (not in serializer). Region is a ForeignKey to the Region model.
+  - Regions: [RegionViewSet](../winemanager/views.py) manages wine regions with CRUD operations. Regions have a name and country, with `unique_together` constraint. Annotates `wine_count` in `get_queryset()`.
   - Bottles: [BottleViewSet](../winemanager/views.py) supports filtering by `wine` and defines idempotent side-effect actions via `@action(detail=True)` (`consume`, `undo_consume`).
   - Stores: [StoreViewSet](../winemanager/views.py) is a standard CRUD set.
-- Serialization: [WineSerializer](../winemanager/serializers.py) includes computed, read-only fields `bottle_count` and `in_stock_count` and validates `rating` bounds. Other serializers are straight `ModelSerializer`s.
-- Models: See [winemanager/models.py](../winemanager/models.py) for `Wine`, `Bottle`, `Store`. `Bottle` links to `Wine` and optional `Store`; `Wine.rating` is a `Decimal` constrained to 0.0–5.0; `Wine.country` uses ISO Alpha-2 country codes via django-countries.
+- Serialization: [WineSerializer](../winemanager/serializers.py) includes computed, read-only fields `bottle_count` and `in_stock_count`, validates `rating` bounds, and provides nested `region` details (read-only). Accepts `region` as ID for write operations. [RegionSerializer](../winemanager/serializers.py) serializes regions with country codes. Other serializers are straight `ModelSerializer`s.
+- Models: See [winemanager/models.py](../winemanager/models.py) for `Wine`, `Region`, `Bottle`, `Store`. `Wine` links to optional `Region` (SET_NULL on delete) and uses ISO Alpha-2 country codes. `Region` has `unique_together = ['name', 'country']` allowing same region names in different countries. `Bottle` links to `Wine` and optional `Store`; `Wine.rating` is a `Decimal` constrained to 0.0–5.0.
 - Permissions/Auth: `REST_FRAMEWORK` in [settings.py](../cellarium_backend/settings.py) sets `IsAuthenticated` globally; use JWT Authorization headers on API calls.
 
 ## Developer Workflow (Docker-first)
@@ -34,10 +35,17 @@ Required Python deps used in code/settings: `Django`, `djangorestframework`, `dj
   - POST `/api/auth/token/refresh/` with `{ "refresh": "..." }` → `{ access }`
 - Authenticated requests: send `Authorization: Bearer <access>`.
 - Wines: GET `/api/wines/?search=FR&ordering=-vintage`
-  - Search fields: `name`, `country` (ISO Alpha-2 code), `region`, `grape_varieties`, `wine_type`
+  - Search fields: `name`, `country` (ISO Alpha-2 code), `region__name` (searches region name), `grape_varieties`, `wine_type`
   - Ordering fields: `name`, `vintage`, `country`, `bottle_count`, `in_stock_count`
-  - Response includes `bottle_count` and `in_stock_count` (from queryset annotations).
-  - Country field uses ISO Alpha-2 codes (e.g., 'FR', 'IT', 'US', 'ES'). Example: `POST /api/wines/` with `{"name": "Bordeaux", "country": "FR"}`
+  - Response includes `bottle_count`, `in_stock_count` (from queryset annotations), and nested `region` object with `{id, name, country}`
+  - Country field uses ISO Alpha-2 codes (e.g., 'FR', 'IT', 'US', 'ES')
+  - Creating wine: POST `/api/wines/` with `{"name": "Bordeaux", "country": "FR", "region": <region_id>}`
+  - Example response: `{"id": 1, "name": "Bordeaux", "region": {"id": 5, "name": "Bordeaux", "country": "FR"}, "country": "FR", ...}`
+- Regions: GET `/api/regions/`, POST `/api/regions/` with `{"name": "Napa Valley", "country": "US"}`
+  - Search fields: `name`, `country`
+  - Ordering fields: `name`, `country`, `wine_count`
+  - Response includes `wine_count` annotation showing number of wines from this region
+  - Unique constraint: same region name can exist in different countries, but not duplicates within same country
 - Bottles: GET `/api/bottles/?wine=<wine_id>`; POST `/api/bottles/<id>/consume/`; POST `/api/bottles/<id>/undo_consume/` (both idempotent).
 
 ## Conventions to Follow
@@ -57,4 +65,5 @@ Required Python deps used in code/settings: `Django`, `djangorestframework`, `dj
 ## Gotchas
 - The project enforces auth by default; unauthenticated API calls will fail unless endpoints override permissions.
 - Ensure `django-filter`, `django-countries`, and `djangorestframework-simplejwt` are installed to match settings; add them to [requirements.txt](../requirements.txt) if missing and rebuild.
-- The `country` field on Wine uses ISO Alpha-2 codes (e.g., 'FR', 'IT', 'US'). Full country names (e.g., 'France') will be rejected.
+- The `country` field on Wine and Region uses ISO Alpha-2 codes (e.g., 'FR', 'IT', 'US'). Full country names (e.g., 'France') will be rejected.
+- When creating a Wine with a region, you must provide `region` as an integer ID of an existing Region object, not a string. The API response will include the full nested region object.
