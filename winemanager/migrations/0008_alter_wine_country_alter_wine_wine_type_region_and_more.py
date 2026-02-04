@@ -5,38 +5,71 @@ import django_countries.fields
 from django.db import migrations, models
 
 
-class Migration(migrations.Migration):
+def clear_country_data(apps, schema_editor):
+    """Clear existing country data before changing field type to CountryField."""
+    Wine = apps.get_model("winemanager", "Wine")
+    Wine.objects.filter(country__isnull=False).update(country=None)
 
+
+class Migration(migrations.Migration):
     dependencies = [
-        ('winemanager', '0007_wine_image_alter_wine_rating'),
+        ("winemanager", "0007_wine_image_alter_wine_rating"),
     ]
 
     operations = [
+        # Clear existing country data to prevent crash when changing to max_length=2
+        migrations.RunPython(clear_country_data, migrations.RunPython.noop),
         migrations.AlterField(
-            model_name='wine',
-            name='country',
-            field=django_countries.fields.CountryField(blank=True, max_length=2, null=True),
+            model_name="wine",
+            name="country",
+            field=django_countries.fields.CountryField(
+                blank=True, max_length=2, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='wine',
-            name='wine_type',
-            field=models.CharField(blank=True, choices=[('red', 'Rood'), ('white', 'Wit'), ('rosé', 'Rosé'), ('sparkling', 'Schuimwijn')], max_length=50, null=True),
+            model_name="wine",
+            name="wine_type",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("red", "Rood"),
+                    ("white", "Wit"),
+                    ("rosé", "Rosé"),
+                    ("sparkling", "Schuimwijn"),
+                ],
+                max_length=50,
+                null=True,
+            ),
         ),
         migrations.CreateModel(
-            name='Region',
+            name="Region",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('country', django_countries.fields.CountryField(max_length=2)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("country", django_countries.fields.CountryField(max_length=2)),
             ],
             options={
-                'ordering': ['country', 'name'],
-                'unique_together': {('name', 'country')},
+                "ordering": ["country", "name"],
+                "unique_together": {("name", "country")},
             },
         ),
         migrations.AlterField(
-            model_name='wine',
-            name='region',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='wines', to='winemanager.region'),
+            model_name="wine",
+            name="region",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="wines",
+                to="winemanager.region",
+            ),
         ),
     ]
