@@ -38,6 +38,7 @@ class Wine(models.Model):
 
     notes = models.TextField(blank=True)
     image = models.ImageField(upload_to='wines/%Y/%m/%d/', blank=True, null=True)
+    alcohol_percentage = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, help_text="Alcohol percentage (e.g. 13.5)")
 
     def __str__(self):
         return f"{self.name} ({self.vintage})" if self.vintage else self.name
