@@ -30,7 +30,7 @@ class WineSerializer(CountryFieldMixin, serializers.ModelSerializer):
             "bottle_count",
             "in_stock_count",
             "rating",
-            "alcohol_percentage",
+            "poy",
         ]
     
     def validate_rating(self, value):
