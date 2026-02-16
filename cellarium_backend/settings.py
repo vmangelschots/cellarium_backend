@@ -219,3 +219,8 @@ SIMPLE_JWT = {
 # WhiteNoise Configuration for static file serving
 WHITENOISE_AUTOREFRESH = DEBUG  # Enable auto-refresh in development
 WHITENOISE_USE_FIPS_COMPLIANT_STORAGE = not DEBUG  # Use for production security
+
+# OpenAI Configuration for wine label analysis
+OPENAI_API_KEY = config('OPENAI_API_KEY', default=None)
+OPENAI_MODEL = config('OPENAI_MODEL', default='gpt-4o')
+OPENAI_MAX_IMAGE_SIZE = config('OPENAI_MAX_IMAGE_SIZE', default=1024, cast=int)  # Max dimension in pixels

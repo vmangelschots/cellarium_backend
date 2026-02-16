@@ -10,3 +10,5 @@ coverage
 python-decouple
 psycopg2-binary
 whitenoise
+openai>=1.0.0
+thefuzz[speedup]

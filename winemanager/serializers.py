@@ -30,7 +30,7 @@ class WineSerializer(CountryFieldMixin, serializers.ModelSerializer):
             "bottle_count",
             "in_stock_count",
             "rating",
-            "poy",
+            "alcohol_percentage",
         ]
     
     def validate_rating(self, value):
@@ -49,7 +49,53 @@ class WineSerializer(CountryFieldMixin, serializers.ModelSerializer):
 class StoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
-        fields = '__all__' 
+        fields = '__all__'
+
+
+# Serializers for wine label analysis response
+class MatchedRegionSerializer(serializers.Serializer):
+    """Serializer for a fuzzy-matched region from the database."""
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    country = serializers.CharField()
+    match_score = serializers.FloatField(help_text="Fuzzy match score between 0.0 and 1.0")
+
+
+class LabelAnalysisDataSerializer(serializers.Serializer):
+    """Serializer for extracted wine data from label analysis."""
+    name = serializers.CharField(allow_null=True, required=False)
+    vintage = serializers.IntegerField(allow_null=True, required=False)
+    wine_type = serializers.ChoiceField(
+        choices=["red", "white", "rosé", "sparkling"],
+        allow_null=True,
+        required=False
+    )
+    country = serializers.CharField(allow_null=True, required=False, help_text="ISO 3166-1 alpha-2 code")
+    grape_varieties = serializers.CharField(allow_null=True, required=False)
+    alcohol_percentage = serializers.FloatField(allow_null=True, required=False)
+    suggested_region_name = serializers.CharField(allow_null=True, required=False)
+    matched_region = MatchedRegionSerializer(allow_null=True, required=False)
+
+
+class LabelAnalysisConfidenceSerializer(serializers.Serializer):
+    """Serializer for confidence scores per field."""
+    name = serializers.FloatField(default=0.0)
+    vintage = serializers.FloatField(default=0.0)
+    wine_type = serializers.FloatField(default=0.0)
+    country = serializers.FloatField(default=0.0)
+    region = serializers.FloatField(default=0.0)
+    grape_varieties = serializers.FloatField(default=0.0)
+    alcohol_percentage = serializers.FloatField(default=0.0)
+
+
+class LabelAnalysisResponseSerializer(serializers.Serializer):
+    """Main response serializer for wine label analysis."""
+    success = serializers.BooleanField()
+    data = LabelAnalysisDataSerializer()
+    confidence = LabelAnalysisConfidenceSerializer()
+    raw_text = serializers.CharField(allow_blank=True, help_text="All text extracted from the label")
+
+
 class BottleSerializer(serializers.ModelSerializer):
     store_details = StoreSerializer(source='store', read_only=True)
     class Meta:
